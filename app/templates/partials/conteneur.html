@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include "partials/css.html" %}
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- Import de D3.JS -->
+
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+
+
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>D&A - Datavisualisation</title>
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    <link href="/statics/css/styles_3.css" rel="stylesheet" />
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+
+</head>
+
+<body class="sb-nav-fixed">
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+      <div>
+        <h1 class="ml-4 text-light">RTS - D&A, Application test : Datavisualisation des collections</h1>
+    </div>
+    </nav>
+
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <!-- Navbar latéral -->
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <!-- Navigation entre les pages -->
+                        <div class="sb-sidenav-menu-heading">Navigation</div>
+                        <a class="nav-link" href="{{ url_for('accueil') }}">
+                            <div class="sb-nav-link-icon"><i class="fas fa-sign-in-alt"></i></div>
+                            Accueil
+                        </a>
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#collapseLayouts"
+                            aria-expanded="false" aria-controls="collapseLayouts">
+                            <div class="sb-nav-link-icon"><i class="fas fa-chart-pie"></i></div>
+                            Graphiques
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne"
+                            data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="{{ url_for('thesaurusgeo') }}">
+                                    <div class="sb-nav-link-icon"><i class="fa-regular fa-sun"></i></i></div>
+                                    Sunburst - Thésaurus Géographique
+                                </a>
+                                <a class="nav-link" href="{{ url_for('thesaurusmat') }}">
+                                    <div class="sb-nav-link-icon"><i class="fa-regular fa-sun"></i></i></div>
+                                    Sunburst - Thésaurus Matière
+                                </a>
+                                <a class="nav-link" href="{{ url_for('typecontenu') }}">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-diagram-successor"></i></div>
+                                    Treemap - Type de contenus
+                                </a>
+                                
+                                <a class="nav-link" href="{{ url_for('cartev2') }}">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-map"></i></div>
+                                    Carte interactive
+                                </a>
+
+                                <a class="nav-link" href="{{ url_for('carteMonde') }}">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-map-pin"></i></div>
+                                    Carte du monde - News 
+                                </a>
+                       
+                            </nav>
+                        </div>
+
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#Knowledge"
+                            aria-expanded="false" aria-controls="Knowledge">
+                            <div class="sb-nav-link-icon"><i class="fas fa-circle-nodes"></i></div>
+                            Knowledge Graph
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="Knowledge" aria-labelledby="headingTwo"
+                            data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="{{ url_for('knowledge_graph_explications') }}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-circle-nodes"></i></div>
+                                    Préparation
+                                </a>
+                                <a class="nav-link" href="{{ url_for('recherche_knowledge_graph') }}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-circle-nodes"></i></div>
+                                    Recherche
+                                </a>
+                            </nav>
+                        </div>
+                    
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#classification-emotions"
+                            aria-expanded="false" aria-controls="classification-emotions">
+                            <div class="sb-nav-link-icon"><i class="fa-solid fa-face-smile-beam"></i></i></div>
+                            Clusterisation
+                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        </a>
+                        <div class="collapse" id="classification-emotions" aria-labelledby="headingTwo"
+                            data-bs-parent="#sidenavAccordion">
+                            <nav class="sb-sidenav-menu-nested nav">
+                                <a class="nav-link" href="{{ url_for('clusterisation_exec') }}">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-face-meh"></i></div>
+                                    Exécuter le code 
+                                </a>
+                                <a class="nav-link" href="{{ url_for('recherche_knowledge_graph') }}">
+                                    <div class="sb-nav-link-icon"><i class="fa-solid fa-face-sad-cry"></i></div>
+                                    Recherche
+                                </a>
+                            </nav>
+                        </div>
+
+
+                        <!-- Affichage des messages flash -->
+                        <div class="container">
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                            <div class="row">
+                                <div class="col">
+                                    {% for category, message in messages %}
+                                    <div class="alert alert-{{category}}" role="alert">{{ message }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Cœur de la page -->
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+
+
+                    {% block body %}{% endblock %}
+
+
+                </div>
+        </div>
+        </main>
+    </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

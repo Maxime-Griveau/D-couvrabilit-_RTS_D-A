@@ -1,0 +1,170 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+	integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<!-- Import du CSS leaflet  -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+	integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Import du JS de leaflet -->
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-search/dist/leaflet-search.min.css" />
+<!-- Import de leaflet-search CSS -->
+
+<script src="https://unpkg.com/leaflet-search/dist/leaflet-search.min.js"></script>
+<!-- Import de leaflet-search JS -->
+
+
+
+<!-- jQuery (required for noUiSlider) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- noUiSlider JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.css" rel="stylesheet">
+<!-- Import de no ui slider -->
+<style>
+	#map {
+		height: 700px;
+		width: 100%;
+		transition: width 1s;
+	}
+
+	#map.reduced {
+		width: 50%;
+		opacity: 1;
+	}
+
+	#resultats {
+		width: 50%;
+		opacity: 1;
+		transition: width 0.5s ease, opacity 0.5s ease;
+	}
+
+	#resultats.hidden {
+		opacity: 0;
+		width: 0;
+	}
+
+	.info-hidden {
+		display: none;
+	}
+
+	.info-visible {
+		display: block;
+	}
+
+	/*Légende de la carte */
+	.legend {
+		padding: 6px 8px;
+		font: 14px Arial, Helvetica, sans-serif;
+		background: white;
+		background: rgba(255, 255, 255, 0.8);
+		box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+		border-radius: 5px;
+		line-height: 24px;
+		color: #555;
+	}
+
+	.legend h4 {
+		text-align: center;
+		font-size: 16px;
+		margin: 2px 12px 8px;
+		color: #777;
+	}
+
+	.legend span {
+		position: relative;
+		bottom: 3px;
+	}
+
+	.legend i {
+		width: 18px;
+		height: 18px;
+		float: left;
+		margin: 0 8px 0 0;
+		opacity: 0.7;
+	}
+
+	.legend i.icon {
+		background-size: 18px;
+		background-color: rgba(255, 255, 255, 1);
+	}
+</style>
+
+<h1 class="text-primary">Carte interactive</h1>
+<div class="col-md-5">
+	<h4 class="mb-6"><i>Sélection des années à afficher</i></h4>
+	<div id="slider" class="m-4"></div>
+	<button id="applyYearChange" class="btn btn-primary col-b-4">Changer l'année</button>
+	<p></p>
+</div>
+
+<div class="container-fluid">
+	<div class="row" id="mapContainer">
+		<div class="col-md-12 col-lg-6" id="map"></div>
+		<div class="col-md-12 col-lg-6" id="resultats"></div>
+	</div>
+	<div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="flexCheckChecked">
+		<label class="form-check-label" for="flexCheckChecked">
+			<i>Exclure les métadonnées automatiques et le speech to text des résultats</i>
+		</label>
+	</div>
+	<div id="layerControl" class="mt-3">
+		<label><input type="checkbox" id="villesCheckbox"> Villes</label>
+		<label><input type="checkbox" id="districtsCheckbox"> Districts</label>
+		<label><input type="checkbox" id="cantonsCheckbox" checked> Cantons</label>
+
+		<p id="info-cantons" class="info-hidden">NB. Le canton d'Appenzell-Rhodes-Extérieures pose problème, pour
+			accéder à ses résultats : tapez le nom dans la barre de recherche
+		</p>
+		<!-- Ne s'affiche que si la case districts est cochée -->
+		<p id="info-districts" class="info-hidden">NB. Les
+			cantons de Genève, Neuchâtel, Uri, Obwald,
+			Nidwald, Glaris, Zoug, Bâle-Ville et
+			Appenzell-Rhodes-Intérieures ne sont pas divisés en
+			districts.
+		</p>
+
+		<p> <b>La recherche porte sur le niveau territorial selectionné, par exemple pour recherche une commune vous
+				devrez les avoir sélectionnées</b>
+			<br> <b>Attention : les entités géographiques ne se recouvrent pas, ainsi si l'on recherche Vaud, les
+				éléments
+				concernant Lausanne seront absents.</b>
+
+
+			<br><i>Les couleurs de la carte sont calculés par rapport au 95e et 5e percentile du nombre de résultat car
+				les données sont très hétérogènes</i>
+
+
+		</p>
+
+		<h3>Traitements réalisés sur les données </h3>
+
+		<p>Les données géographiques proviennent de l'OFS, elles ont été converties au format international (de
+			EPSG:2056 vers EPSG:4326). Les noms des communes et cantons ont été "traduites" en français à partir des
+			données de Wikidata.
+			<br> Les couleurs affichées sont le nombre de résultats (précalculés) pour un territoire donné, les
+			caractères spéciaux ont été échappés afin d'éviter les erreurs.
+			<br> Les communes éponymes de leur canton (p. ex. Genève, Glaris...) ont vu la chaine de caractères '-ville'
+			ajoutée à leur nom pour respecter la syntaxe du thésaurus Géographique et éviter les doublons. (ce n'est pas le cas des districts)
+			<br> On a essayé de "traiter" la problématique des communes aux noms communs (Champion, Le Lieu, etc.) en
+			appliquant une méthode de traitement automatique des langues (TAL) : sans succès (car il aurait fallu
+			développer une algorithme complexe et chronophage). Pour éviter que ces dernières ne faussent les résultats,
+			vous pouvez cocher la case "Exclure les métadonnées automatiques et le speech to text des résultats"
+		</p>
+		<p>Les couleurs sont calculées par un algorithme qui prend en compte uniquement les valeurs "normales" : c'est à dire que les 5 % de valeurs très grandes et 5% de valeurs très petites ne sont pas prises en compte, sinon des lieux très représentés auraient trop lissé la visualisation</p>
+	</div>
+</div>
+<script>
+    var geojsonVillesUrl = "{{ url_for('static', filename='datas/out/carte/Communes.geojson') }}";
+    var geojsonDistrictsUrl = "{{ url_for('static', filename='datas/out/carte/Districts.geojson') }}";
+    var geojsonCantonsUrl = "{{ url_for('static', filename='datas/out/carte/Cantons.geojson') }}";
+    var baseGeojsonUrl = "{{ url_for('static', filename='datas/out/carte/') }}";
+</script>
+<script src="{{ url_for('static', filename='js/LeafletCarte.js') }}"></script>
+
+
+{% endblock %}

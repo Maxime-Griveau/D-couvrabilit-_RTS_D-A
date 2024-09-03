@@ -1,0 +1,173 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+<!-- jQuery (requis pour no uislider) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<!-- noUiSlider JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.css" rel="stylesheet">
+<!-- Import de no ui slider -->
+
+
+
+<style>
+    #graph {
+        width: 1200px;
+        height: 1000px;
+        border: 1px solid #ccc;
+        display: block;
+        margin: 20px auto;
+        /* Centrer le graphique horizontalement */
+    }
+
+
+    .node {
+        stroke: #fff;
+        stroke-width: 1.5px;
+    }
+
+    .link {
+        stroke: #999;
+        stroke-opacity: 0.6;
+    }
+
+    #chargementPage {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .info {
+        margin-top: 1rem;
+        font-size: small;
+        color:grey;
+        font-style: italic;
+    }
+    .noUi-connect {
+        background: #007bff;
+    }
+    
+    
+    .number-icon {
+        background-color: white;
+        border-radius: 50%;
+        border: 2px solid #007bff;
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1.5;
+        width: 30px;
+        height: 30px;
+    }
+    
+</style>
+
+
+
+<h1 class="display-1">Exploration des liens dans le fonds</h1>
+<div class="d-flex justify-content-center">
+    <div class="spinner-border text-primary" role="status" id="chargementPage" style="width: 9rem; height: 9rem;">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+</div>
+<div class="container my-5">
+    <div class="container">
+        <div class="row">
+            <!-- Colonne pour le formulaire de recherche -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 data-toggle="collapse" data-target="#collapseExample" aria-expanded="false"
+                            aria-controls="collapseExample">
+                            Entités recherchées <i class="fa-solid fa-caret-down"></i>
+                        </h3>
+                        <form id="recherche_form">
+                            <div class="mb-3">
+                                <label for="Entite1" class="form-label">Entité 1 :</label>
+                                <input type="text" class="form-control" id="Entite1" name="Entite1" placeholder="Utiliser des guillements pour les entités composées de plusieurs mots">
+                            </div>
+                            <div class="mb-3">
+                                <label for="Entite2" class="form-label">Entité 2 :</label>
+                                <input type="text" class="form-control" id="Entite2" name="Entite2" placeholder="Utiliser des guillements pour les entités composées de plusieurs mots">
+                            </div>
+                            <div class="mb-3">
+                                <label for="Entite3" class="form-label">Entité 3 : (optionnelle)</label>
+                                <input type="text" class="form-control" id="Entite3" name="Entite3" placeholder="Utiliser des guillements pour les entités composées de plusieurs mots">
+                            </div>
+                            <div class="mb-3">
+                                <label for="Entite4" class="form-label">Entité 4 : (optionnelle)</label>
+                                <input type="text" class="form-control" id="Entite4" name="Entite4" placeholder="Utiliser des guillements pour les entités composées de plusieurs mots">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Rechercher</button>
+                        </form>
+                        <p class="info">Vous pouvez utiliser les guillemets pour les entités composées de plusieurs mots (Alain Berset p. ex.)</p>
+                        <p class="info">Les champs entité 3 et entité 4 peuvent permettre d'afiner une recherche, par exemple si vous cherchez "Chocolat", associer le mot "Cacao" permet d'afiner les résultats</p>
+                        <p class="info">Conseil : ne tentez pas de voir les liens entre des entités qui sont très
+                            proches (par exemple : Suisse et France) ; le trop grand nombre de résultats rendrait le
+                            graph illisible.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colonne pour les filtres -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-check mb-4">
+                            <h4><i>Filtres</i></h4>
+                            <div id="slider" class="m-4"></div>
+                            <button id="applyYearChange" class="btn btn-primary">Changer l'année</button>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked">
+                            <label class="form-check-label" for="flexCheckChecked">
+                                <i>Exclure les métadonnées éditoriales (Open Media) et le speech to text des
+                                    résultats</i>
+                            </label>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" value="" id="seulThesaurus">
+                            <label class="form-check-label" for="seulThesaurus">
+                                <i>Ne conserver que le Thésaurus dans les résultats</i>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <h1 class="text-primary">Knowledge Graph</h1>
+        <div id="resultats"></div>
+        <div id="graph"></div>
+    </div>
+
+    <div class="mt-5">
+        <h3>Traitements réalisés sur les données</h3>
+        <p>Nous avons fait le choix de ne requêter que les sujets pour améliorer la fiabilité des résultats : au
+            détriment de certaines émissions non divisées en sujets, par ailleurs, sont exclus des résultats les sujets de plus de 25 minutes, car on a considéré que c'étaient des TJ complets non-divisés en sujets.</p>
+        <p>Comme l'objectif de cette interface est d'afficher les liens entre les thématiques, seuls les médias ayant
+            une ou plus relation sont conservés, les autres sont ommis (pour des raisons de lisibilité et de
+            performance).</p>
+        <p>Il n'est malheureusement pas possible d'avoir une vue d'ensemble navigable, car cela aurait nécessité de
+            géner un fichier qui, pour chaque entité des thésaurus, prennent tous les GUID et les stocke pour pouvoir
+            ensuite les rendre. Ce fichier, pour un échantillon de 100 termes du thésaurus (sur 22 000) faisant 2 200
+            000 lignes, il n'était pas concevable de le générer. Par ailleurs, l'affichage aurait été impossible</p>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/knowledge_graph.js') }}"></script>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 class="text-center mb-4">Vos équipes favorites</h1>
+                <ul class="list-group">
+                    {% for equipe in equipes_favorites %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('donnees_pays', nom_pays=equipe) }}">{{ equipe }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}

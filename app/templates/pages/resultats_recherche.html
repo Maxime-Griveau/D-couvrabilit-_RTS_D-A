@@ -1,0 +1,74 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+
+<div class="container">
+    <h1>Résultats de la recherche pour <i>{{requete}}</i></h1>
+    <br>
+    <div>
+        <div>
+            <div>
+                {% if donnees %}
+                    <a class="list-group-item list-group-item-action" id="list-list-prev" 
+                         href="{{ url_for('recherche_rapide', chaine=requete, page=donnees.prev_num) }}" class="btn btn-outline-dark 
+                        {% if not donnees.has_prev %}disabled{% endif %}">
+                            &laquo; <b>Page précédente</b>
+                    </a>
+                    <br/>
+                {%else%}
+                <h2>Merci de saisir une requête dans le champ </h2>
+                {% endif %}
+
+                {% for pays in donnees.items %}
+                   <ul>
+                    <li> <a target="_blank" href="{{ url_for('donnees_pays', nom_pays=pays.nom) }}">
+                        {{pays.nom.replace(requete, '<span style="background-color: yellow;">{}</span>'.format(requete)) | safe}}, édition de {{pays.year}}
+                    </a>
+                </li>
+                </ul>
+                {% endfor %}
+
+                {% if donnees %}
+                    <a class="list-group-item list-group-item-action" id="list-list-next" 
+                        href="{{ url_for('recherche_rapide', chaine=requete, page=donnees.next_num) }}" class="btn btn-outline-dark 
+                            {% if not donnees.has_next %}disabled{% endif %}">
+                            <br/>
+                        <b>Page suivante</b> &raquo;
+                    </a>
+                    
+                {% endif %}
+            </div>
+        </div>
+
+      
+    </div>
+</div>
+<br>
+
+<!-- Pagination -->
+<div class="row">
+    <div class="col-sm-4"></div>
+    <div class="col-sm-5">
+        {% if donnees %}
+            {% for page_num in donnees.iter_pages() %}
+                {% if page_num %}
+                    {% if donnees.page == page_num %}
+                        <a href="#" class="btn btn-dark disabled">
+                            {{ page_num }}
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('recherche_rapide', chaine=requete, page=page_num) }}" class="btn btn-outline-dark">
+                            {{ page_num }}
+                        </a>
+                    {% endif %}
+                {% else %}
+                   
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+</div>
+</div>
+
+{% endblock %}

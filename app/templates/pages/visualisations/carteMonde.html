@@ -1,0 +1,137 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<!-- Import du CSS leaflet  -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Import du JS de leaflet -->
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-search/dist/leaflet-search.min.css" />
+<!-- Import de leaflet-search CSS -->
+
+<script src="https://unpkg.com/leaflet-search/dist/leaflet-search.min.js"></script>
+<!-- Import de leaflet-search JS -->
+
+<script src="https://unpkg.com/leaflet-polygon-center/leaflet-polygon-center.min.js"></script>
+
+<!-- Ajout de turf.js pour les centroïdes -->
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+<!-- jQuery (required for noUiSlider) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- noUiSlider JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.css" rel="stylesheet">
+<!-- Import de no ui slider -->
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/LeafletCarteV2.css') }}">
+<!-- Styles CSS -->
+
+<div class="container mt-4">
+    <h1 class="display-1">Carte interactive - Recherche dans les NEWS </h1>
+
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-primary" role="status" id="chargementPage" style="width: 9rem; height: 9rem;">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="rechercheForm" method="post" class="form-inline">
+                        <div class="form-row">
+                            <div class="col-auto">
+                                <input type="text" class="form-control mb-2" placeholder="Entrez un mot à rechercher"
+                                    name="Entite1" id="entite1">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary mb-2">Rechercher
+                                </button>
+
+                            </div>
+                            <div class="col-auto">
+                                <small class="form-text text-muted">Le terme recherché viendra conditionner les
+                                    résultats. (vous pouvez utiliser des guillemets)
+
+                                    <br>NB. pour chercher un territoire, il faut utiliser la loupe présente sur la carte.
+
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                   
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card mb-4">
+                <div class="card-body mb-2">
+                    <h4><i>Sélection des années à afficher</i></h4>
+                    <div id="slider" class="m-4"></div>
+                    <button id="applyYearChange" class="btn btn-primary">Changer l'année</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div id="mapContainer">
+                <div id="map"></div>
+                <div id="resultats" class="hidden">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="form-check form-check-inline">
+                <input type="reset" id="resetResults" value="Réinitialiser les résultats"
+                    class="btn btn-primary mb-2">
+            </div>
+            <div id="layerControl" class="mt-3 mb-3 d-flex flex-wrap align-items-center justify-content-between">
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-success" id="export" value="True">Exporter les résultats
+                        actuels au format xlsx (excel hiérarchisé)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="display-6">Traitements réalisés sur les données</h3>
+            <p>Les données géographiques proviennent du dépot github suivant : <a href="https://github.com/johan/world.geo.json/tree/master">github - Johan Sundström </a> </p>
+        
+            <p>Les couleurs sont calculées par un algorithme qui prend en compte uniquement les valeurs les plus
+                courantes :
+                c'est à dire que les 5 % de valeurs très grandes et 5% de valeurs très petites ne sont pas prises en
+                compte, sinon les très grandes écarts entre les valeurs maximales et minimales auraient biaisé la
+                visualisation. Il faut donc prendre les couleurs plutôt comme des indications utiles et guides visuel
+                que comme des valeurs absolues. </p>
+
+            <p>L'export des données correspond à la sélection courante, donc si vous avez cliqué sur un territoire votre
+                fichier en sortie ne contiendra que les données lui correpondant. Pour obtenir des résultats globaux sur
+                tous les territoires d'un niveau (cantons, districts, communes), il suffit de ne rien sélectionner. Tous
+                les filtres (recherche, date...) sont pris en compte dandfs les résultats de l'export.
+
+            </p>
+        </div>
+    </div>
+</div>
+<script>
+    var geojsonUrl = "{{ url_for('static', filename='datas/out/carte/countries_corrigé.geojson') }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/LeafletCarteMonde.js') }}"></script>
+
+
+{% endblock %}

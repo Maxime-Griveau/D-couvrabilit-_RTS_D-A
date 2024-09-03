@@ -1,0 +1,212 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<!-- Import du CSS leaflet  -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<!-- Import du JS de leaflet -->
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-search/dist/leaflet-search.min.css" />
+<!-- Import de leaflet-search CSS -->
+
+<script src="https://unpkg.com/leaflet-search/dist/leaflet-search.min.js"></script>
+<!-- Import de leaflet-search JS -->
+
+<script src="https://unpkg.com/leaflet-polygon-center/leaflet-polygon-center.min.js"></script>
+
+
+<!-- jQuery (requis pour no uislider) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- noUiSlider JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.5.0/nouislider.min.css" rel="stylesheet">
+<!-- Import de no ui slider -->
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/LeafletCarteV2.css') }}">
+<!-- Styles CSS -->
+
+<div class="container mt-4">
+    <h1 class="display-1">Carte interactive</h1>
+
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border text-primary" role="status" id="chargementPage" style="width: 9rem; height: 9rem;">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="rechercheForm" method="post" class="form-inline">
+                        <div class="form-row">
+                            <div class="col-auto">
+                                <input type="text" class="form-control mb-2" placeholder="Entrez un mot à rechercher"
+                                    name="Entite1" id="entite1">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary mb-2">Rechercher
+                                </button>
+
+                            </div>
+                            <div class="col-auto">
+                                <small class="form-text text-muted">Le terme recherché viendra conditionner les
+                                    résultats. (vous pouvez utiliser des guillemets)
+
+                                    <br>NB. pour chercher un territoire, il faut utiliser la loupe présente sur la carte.
+
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked">
+                        <label class="form-check-label" for="flexCheckChecked">
+                            <i>Exclure les métadonnées éditoriales (Open Media) et le speech to text des résultats</i>
+                        </label>
+                    </div>
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" value="" id="seulThesaurus">
+                        <label class="form-check-label" for="seulThesaurus">
+                            <i>Ne conserver que le Thésaurus dans les résultats</i>
+                        </label>
+
+                        <small class="form-text text-muted">[Fonctionnalité partiellement implémentée (ne recherche que
+                            dans les sujets et séquences) (<a href="#seulThesaurusInfos">détails</a>)]</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card mb-4">
+                <div class="card-body mb-2">
+                    <h4><i>Sélection des années à afficher</i></h4>
+                    <div id="slider" class="m-4"></div>
+                    <button id="applyYearChange" class="btn btn-primary">Changer l'année</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div id="mapContainer">
+                <div id="map"></div>
+                <div id="resultats" class="hidden">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div id="layerControl" class="mt-3 mb-3 d-flex flex-wrap align-items-center justify-content-between">
+                <div class="d-flex align-items-center flex-wrap">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="villesRadio">
+                        <label class="form-check-label" for="villesRadio">Communes</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="districtsRadio">
+                        <label class="form-check-label" for="districtsRadio">Districts</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="cantonsRadio"
+                            checked>
+                        <label class="form-check-label" for="cantonsRadio">Cantons</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="reset" id="resetResults" value="Réinitialiser les résultats"
+                            class="btn btn-primary mb-2">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-success" id="export" value="True">Exporter les résultats
+                        actuels au format xlsx (excel hiérarchisé)</button>
+                </div>
+            </div>
+            <!-- <p id="info-cantons" class="info-hidden lead"></p> à remplir en cas d'information conditionnelle sur les cantons à afficher -->
+            <p id="info-districts" class="info-hidden lead">NB. Les cantons de Genève, Neuchâtel, Uri, Obwald, Nidwald,
+                Glaris, Zoug, Bâle-Ville et Appenzell-Rhodes-Intérieures ne sont pas divisés en districts.</p>
+            <p id="info-villes" class="info-hidden lead">NB. Le temps de chargement des couleurs de la carte pour les
+                villes peut être long.</p>
+            <p><b>La recherche porte sur le niveau territorial sélectionné, par exemple pour recherche une commune vous
+                    devrez les avoir sélectionnées</b></p>
+            <p><b>Une fois que vous avez cliqué sur la carte, seules les valeurs et résultats de recherche
+                    s'actualiseront, les couleurs resteront intactes pour des questions de performances.</b></p>
+            <p><b>Attention : les entités géographiques ne se recouvrent pas, ainsi si l'on recherche Vaud, les éléments
+                    concernant Lausanne seront absents.</b></p>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="display-6">Traitements réalisés sur les données</h3>
+            <p>Les données géographiques proviennent de l'OFS, elles ont été converties au format international (de
+                EPSG:2056 vers EPSG:4326). Les noms des communes et cantons ont été "traduites" en français à partir des
+                données de Wikidata.</p>
+            <p>Les couleurs affichées sont le nombre de résultats (précalculés) pour un territoire donné, les caractères
+                spéciaux ont été échappés afin d'éviter les erreurs.</p>
+            <p>Les communes éponymes de leur canton (p. ex. Genève, Glaris...) ont vu la chaîne de caractères '-ville'
+                ajoutée à leur nom pour respecter la syntaxe du thésaurus Géographique et éviter les doublons. (ce n'est
+                pas le cas des districts)</p>
+            <p>Les médias dont la durée en secondes est inférieure à 15 ont été exclus des résultats.
+            </p>
+            <p>Pour les villes/districts problématiques, c'est-à-dire ayant pour nom un nom commun (Le Lieu, Champion,
+                Au, etc.) on ne recherche que dans le thésaurus afin d'éviter de fausser les résultats </p>
+            <p><a href="{{ url_for('villes_problematiques') }}">Liste des territoires problématiques</a> (et explication
+                de la sélection de ces derniers).
+            </p>
+            <p>Les couleurs sont calculées par un algorithme qui prend en compte uniquement les valeurs les plus
+                courantes :
+                c'est à dire que les 5 % de valeurs très grandes et 5% de valeurs très petites ne sont pas prises en
+                compte, sinon les très grandes écarts entre les valeurs maximales et minimales auraient biaisé la
+                visualisation. Il faut donc prendre les couleurs plutôt comme des indications utiles et guides visuel
+                que comme des valeurs absolues. </p>
+
+            <p>L'export des données correspond à la sélection courante, donc si vous avez cliqué sur un territoire votre
+                fichier en sortie ne contiendra que les données lui correpondant. Pour obtenir des résultats globaux sur
+                tous les territoires d'un niveau (cantons, districts, communes), il suffit de ne rien sélectionner. Tous
+                les filtres (recherche, date...) sont pris en compte dans les résultats de l'export.
+
+            </p>
+            <p id="seulThesaurusInfos">Pour l'instant, les termes thésaurus utilisés sont ceux de la colonne
+                "THP_BL_PHRASE" de la base, ils continnent donc des identifiants et pas de majsucules. On a traité la
+                problématique des majuscules (quoique certains territoires comme Appenzell-Rhodes-Intérieures conservent
+                une majuscule accentuée) mais pas celle des qualifieurs (THP_QUALIFY en base), donc les cantons comme le
+                Jura qui sont nommés "JURA (Canton)" sont considérés comme ayant peu de résultats (ils en ont quand même
+                car on a ajouté le qualificateur _flou à la requête).
+                Traiter cette problématique aurait été chronophage, et comme la base utilisée est temporaire (index
+                SOLR) à évoluer, on pourra récupérer directement la colonne THP-PHRASE qui contient les termes thésaurus
+                sans leurs identifiants et avec des accents, réglant ainsi les problématiques actuelles.
+            </p>
+            <p>Le canton de Schwytz (orthographe thésaurus) s'orthographie aussi parfois Schwyz, on a fait le choix de
+                conserver l'orthographe qui donne le plus de résultats (1400 contre 432), excluant de facto les
+                résultats du thésaurus.
+
+            </p>
+        </div>
+    </div>
+</div>
+<script>
+    var geojsonVillesUrl = "{{ url_for('static', filename='datas/out/carte/villes.geojson') }}";
+    var geojsonDistrictsUrl = "{{ url_for('static', filename='datas/out/carte/districts.geojson') }}";
+    var geojsonCantonsUrl = "{{ url_for('static', filename='datas/out/carte/cantons.geojson') }}";
+    var baseGeojsonUrl = "{{ url_for('static', filename='datas/out/carte/') }}";
+</script>
+
+<script src="{{ url_for('static', filename='js/LeafletCarteV2.js') }}"></script>
+
+
+{% endblock %}

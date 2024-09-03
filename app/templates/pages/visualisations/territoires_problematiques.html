@@ -1,0 +1,25 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+
+<h1>Liste des territoires problématiques</h1>
+
+<h5><i>Méthode de sélection</i></h5>
+<p>Pour les territoires ayant plus de 2000 résultats, on a vérifié d'abord s'ils étaient des noms communs, si c'est le cas, ils ont été exclus des résultats. (sauf pour "Le Vaud" qui a été exclu car éponyme du canton)</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Villes</th>
+            <th scope="col">Districts</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for territoire in territoires %}
+        <tr>
+            <td scope="row">{{ territoire.ville }}</td>
+            <td scope="row">{{ territoire.district }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

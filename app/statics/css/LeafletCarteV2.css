@@ -1,0 +1,132 @@
+#mapContainer {
+    display: flex;
+    transition: all 1s ease;
+}
+
+#map {
+    height: 700px;
+    width: 100%; /* Initialement, la carte prend 100% de la largeur */
+    transition: width 1s ease;
+}
+
+#map.reduced {
+    width: 50%; /* Réduire la carte à 50% lorsqu'il y a des résultats */
+}
+
+#resultats.hidden {
+    transition: width 1s ease, opacity 1s ease;
+}
+
+#resultats.visible {
+    width: 50%; /* Augmenter la largeur de la section des résultats à 50% lorsqu'elle est visible */
+    opacity: 1;
+    transition: width 1s ease, opacity 1s ease;
+}
+
+.hidden {
+    display: none;
+    transition: width 1s ease, opacity 1s ease;
+}
+
+.visible{
+    display: block;
+    transition: width 1s ease, opacity 1s ease;
+}
+
+.info-hidden {
+    display: none;
+}
+
+.info-visible {
+    display: block;
+}
+
+/*Légende de la carte */
+.legend {
+    padding: 6px 8px;
+    font: 14px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    line-height: 24px;
+    color: #555;
+}
+
+.legend h4 {
+    text-align: center;
+    font-size: 16px;
+    margin: 2px 12px 8px;
+    color: #777;
+}
+
+.legend span {
+    position: relative;
+    bottom: 3px;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin: 0 8px 0 0;
+    opacity: 0.7;
+}
+
+.noUi-connect {
+    background: #007bff;
+}
+
+
+.number-icon {
+    background-color: white;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1.5;
+    width: 30px;
+    height: 30px;
+}
+
+/* CSS pour la boîte de dialogue de chargement */
+
+#chargementPage {
+    display: none; /* Par défaut, elle est cachée */
+    position: fixed; /* Elle est fixée par rapport à la fenêtre */
+    z-index: 9999; /* Elle est au-dessus de tous les autres éléments */
+    display: flex; /* Pour centrer le contenu */
+    justify-content: center; /* Centrer horizontalement */
+    align-items: center; /* Centrer verticalement */
+}
+.spinner-border {
+    width: 1rem; /* Largeur du spinner */
+    height: 1rem; /* Hauteur du spinner */
+}
+
+#tableau_petit{
+    font-size: 11px; 
+}
+
+
+
+.label {
+
+    padding: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 2px 2px 2px black;
+    color:white;
+    font-family: sans-serif;
+    text-align: center;
+    
+}
+
+ /*Bouton de fermture de la div des résultats*/
+ .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: black;
+}

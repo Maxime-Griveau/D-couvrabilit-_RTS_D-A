@@ -1,0 +1,20 @@
+{% extends "partials/conteneur.html" %}
+
+{% block body %}
+
+<h1>Knowledge graph</h1>
+
+<h4><br><b>Liste des CSV à préparer :</b></h3>
+<ul>  </ul>
+<li><b>Thesaurus.csv</b> : id_thesaurus / terme / id_type / occurences_totales</li>
+<li><b>Thematiques.csv</b> : id / type (GEO, PP, PM, MAT) / id_thesaurus</li>
+<li><b>EntiteeLiee.csv</b> : id / id_terme_recherché / seuil / id_thesaurus </li>
+<li><b>Media.csv </b>: UMID / Titre / Date / Resume / GUID_link /Collection / id_thesaurus</li>
+<li><b>RechercheTerme.csv</b> : id / terme_recherché / id_thesaurus</li>
+<li><b>RechercheAssocié.csv</b> : id / terme_associé / id_thesaurus</li>
+<li><b>STT.csv </b>: id / texte / id_thesaurus</li>
+
+<h4><br>Modèle de données :</h4>
+
+<img src="{{ url_for('static', filename='img/Modelisation_knowledge.jpeg') }}" height="1000"/>
+{% endblock %}
